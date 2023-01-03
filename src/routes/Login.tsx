@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -13,7 +13,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import { isLogin } from '../tools';
 
 const theme = createTheme();
 
@@ -30,10 +29,6 @@ export default function LoginPage() {
         localStorage.setItem('isLogin', 'true')
         navigate('/app')
     };
-
-    useEffect(() => {
-        if (isLogin()) navigate('/app')
-    }, [navigate])
 
     return (
         <ThemeProvider theme={theme}>

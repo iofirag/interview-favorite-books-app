@@ -1,7 +1,7 @@
 import { alpha, AppBar, Box, IconButton, InputBase, styled, Toolbar, Typography } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
 import { useLoaderData, useNavigate } from "react-router-dom"
-import { isLogin, useDebounce } from "../tools"
+import { useDebounce } from "../tools"
 import BookList from "./BookList"
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
@@ -112,7 +112,6 @@ export async function loader() {
 
 
 export default function BooksPage() {
-    const navigate = useNavigate();
     const initialBookList: BookItemInterface[] = useLoaderData() as BookItemInterface[]
     const [bookList, setBookList] = useState<BookItemInterface[]>(initialBookList)
     const [searchTerm, setSearchTerm] = useState<string>()
@@ -136,10 +135,6 @@ export default function BooksPage() {
         const { value } = event.target
         setSearchTerm(prev => prev === value ? prev : value)
     }, [])
-
-    useEffect(() => {
-        if (!isLogin()) navigate('/')
-    }, [navigate])
 
     useEffect(() => {
         if (!debouncedSearchTerm) return
