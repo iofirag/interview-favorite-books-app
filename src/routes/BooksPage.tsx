@@ -1,6 +1,6 @@
 import { alpha, AppBar, Box, IconButton, InputBase, styled, Toolbar, Typography } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
-import { useLoaderData, useNavigate } from "react-router-dom"
+import { useLoaderData } from "react-router-dom"
 import { useDebounce } from "../tools"
 import BookList from "./BookList"
 import MenuIcon from '@mui/icons-material/Menu';

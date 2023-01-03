@@ -5,7 +5,7 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import "./index.css";
-import BooksPage, {loader as booksLoader} from "./routes/BooksPage";
+import BooksPage, { loader as booksLoader } from "./routes/BooksPage";
 import ErrorPage from "./routes/ErrorPage";
 import LoginPage from "./routes/Login";
 import Root from "./routes/Root";
@@ -19,19 +19,16 @@ const router = createBrowserRouter([
         path: "/",
         element: <Root />,
         errorElement: <ErrorPage />,
-        // action: rootAction,
         children: [
-              {
-                // index: true,
+            {
+                index: true,
+                element: <LoginPage />,
+            },
+            {
                 path: "/app",
                 element: <BooksPage />,
                 loader: booksLoader
-              },
-              {
-                index: true,
-                // path: "/",
-                element: <LoginPage />,
-              },
+            }
         ],
     }
 ]);
