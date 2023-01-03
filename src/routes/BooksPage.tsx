@@ -1,4 +1,4 @@
-import { alpha, AppBar, Box, IconButton, InputBase, styled, Toolbar, Typography } from "@mui/material"
+import { alpha, AppBar, Box, IconButton, InputBase, Pagination, styled, Toolbar, Typography } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"
 import { useLoaderData } from "react-router-dom"
 import { useDebounce } from "../tools"
@@ -99,22 +99,36 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     }
 }));
 
-async function getBooks(query: string) {
-    const booksRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${query}`);
-    const booksResData: BooksResInterface = await booksRes.json()
-    return booksResData.items || []
+const PAGE_ITEMS: number = 6;
+const START_SEARCH_TERM: string = 'example books';
+
+async function getBooks(query: string, startIndex: number = 1) {
+    const booksRes = await fetch(`https://www.googleapis.com/books/v1/volumes?startIndex=${startIndex}&maxResults=${PAGE_ITEMS}&q=${query}`);
+    const booksResData = await booksRes.json() as BooksResInterface
+    return {
+        items: booksResData.items || [],
+        kind: booksResData.kind || '',
+        totalItems: booksResData.totalItems || 0,
+    }
 }
 
 export async function loader() {
-    const bookRes: BookItemInterface[] = await getBooks('example books') as BookItemInterface[];
-    return bookRes;
+    return await getBooks(START_SEARCH_TERM);
 }
 
 
 export default function BooksPage() {
-    const initialBookList: BookItemInterface[] = useLoaderData() as BookItemInterface[]
-    const [bookList, setBookList] = useState<BookItemInterface[]>(initialBookList)
-    const [searchTerm, setSearchTerm] = useState<string>()
+    const initBooksResData: BooksResInterface = useLoaderData() as BooksResInterface;
+    const [bookResData, setBookResData] = useState<{
+        totalItems: number,
+        currentPage: number,
+        items: any[],
+    }>({
+        items: initBooksResData.items,
+        totalItems: initBooksResData.totalItems,
+        currentPage: 1
+    })
+    const [searchTerm, setSearchTerm] = useState<string>(START_SEARCH_TERM)
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
     const handleFavorites = (id: string): boolean => {
@@ -136,14 +150,28 @@ export default function BooksPage() {
         setSearchTerm(prev => prev === value ? prev : value)
     }, [])
 
+
+    const paginationHandler = function (event: React.ChangeEvent<any>, page: number) {
+        event.preventDefault();
+        setBookResData(prev => {
+            return { ...prev, currentPage: page }
+        })
+    }
+
+    const fetchBooks = async (query: string, pageNum: number) => {
+        try {
+            const booksRes: BooksResInterface = await getBooks(query, pageNum * PAGE_ITEMS);
+            setBookResData({items: booksRes.items, totalItems: booksRes.totalItems, currentPage: pageNum})
+        } catch(error) {
+            setBookResData(prev => { return {...prev, currentPage: 1}})
+            console.error(error)
+        }
+    }
+
     useEffect(() => {
         if (!debouncedSearchTerm) return
-        const fetchBooks = async (query: string) => {
-            const fetchedBooks = await getBooks(query);
-            setBookList(fetchedBooks);
-        }
-        fetchBooks(debouncedSearchTerm)
-    }, [debouncedSearchTerm])
+        fetchBooks(debouncedSearchTerm, bookResData.currentPage)
+    }, [debouncedSearchTerm, bookResData.currentPage])
 
     const favoriteBookIdList: Set<string> = getFavoriteBookIdList()
     return (
@@ -175,11 +203,13 @@ export default function BooksPage() {
                             placeholder="Search…"
                             inputProps={{ 'aria-label': 'search' }}
                             onChange={searchHandler}
+                            value={searchTerm}
                         />
                     </Search>
                 </Toolbar>
             </AppBar>
-            <BookList bookList={bookList} favoriteBookIdList={favoriteBookIdList} handleFavorites={handleFavorites} style={{ marginTop: 20 }} />
+            <BookList bookList={bookResData.items} favoriteBookIdList={favoriteBookIdList} handleFavorites={handleFavorites} style={{ marginTop: 20 }} />
+            <Pagination onChange={paginationHandler} showFirstButton={true} count={Math.round(bookResData.totalItems/PAGE_ITEMS)} page={bookResData.currentPage} size="large" />
         </Box>
     );
 }

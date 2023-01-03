@@ -46,7 +46,7 @@ export default function BookItem(props: BookItemProps) {
             <Grid container spacing={2}>
                 <Grid item>
                     <ButtonBase sx={{ width: 128, height: 128 }}>
-                        <Img alt="complex" src={book.volumeInfo.imageLinks.thumbnail} />
+                        <Img alt="complex" src={book.volumeInfo?.imageLinks?.thumbnail} />
                     </ButtonBase>
                 </Grid>
                 <Grid item xs={12} sm container>
